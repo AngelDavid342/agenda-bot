@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi Agenda</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blur: 28px;
+      --glass: rgba(255,255,255,0.18);
+      --glass-border: rgba(255,255,255,0.35);
+      --glass-hover: rgba(255,255,255,0.26);
+      --glass-dark: rgba(0,0,0,0.12);
+      --text: rgba(255,255,255,0.95);
+      --text-muted: rgba(255,255,255,0.55);
+      --text-dim: rgba(255,255,255,0.3);
+      --accent: #fff;
+      --radius: 20px;
+      --radius-lg: 28px;
+      --radius-xl: 36px;
+    }
+
+    html { height: 100%; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      min-height: 100vh;
+      background: #0a0a1a;
+      color: var(--text);
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* ── FONDO ANIMADO ── */
+    .bg {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      animation: drift 20s ease-in-out infinite;
+      opacity: 0.55;
+    }
+    .orb1 { width: 600px; height: 600px; background: radial-gradient(circle, #5b8fff, #3355cc); top: -150px; left: -100px; animation-delay: 0s; }
+    .orb2 { width: 500px; height: 500px; background: radial-gradient(circle, #bf6bff, #7722cc); top: 30%; right: -150px; animation-delay: -7s; }
+    .orb3 { width: 450px; height: 450px; background: radial-gradient(circle, #ff6bbb, #cc2277); bottom: -100px; left: 20%; animation-delay: -14s; }
+    .orb4 { width: 350px; height: 350px; background: radial-gradient(circle, #6bffdd, #22aa88); top: 60%; left: 60%; animation-delay: -3s; }
+    @keyframes drift {
+      0%,100% { transform: translate(0,0) scale(1); }
+      33% { transform: translate(40px,-30px) scale(1.05); }
+      66% { transform: translate(-30px,40px) scale(0.95); }
+    }
+
+    /* ── NOISE TEXTURE ── */
+    .bg::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
+    /* ── LAYOUT ── */
+    .app {
+      position: relative;
+      z-index: 1;
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 3rem 1.25rem 5rem;
+    }
+
+    /* ── GLASS MIXIN ── */
+    .glass {
+      background: var(--glass);
+      backdrop-filter: blur(var(--blur)) saturate(180%);
+      -webkit-backdrop-filter: blur(var(--blur)) saturate(180%);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+    }
+
+    /* ── HEADER ── */
+    .header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+      padding-top: 1rem;
+    }
+    .header-icon {
+      width: 72px; height: 72px;
+      margin: 0 auto 1rem;
+      background: var(--glass);
+      backdrop-filter: blur(var(--blur));
+      -webkit-backdrop-filter: blur(var(--blur));
+      border: 1px solid var(--glass-border);
+      border-radius: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.4);
+      animation: float 4s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%,100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+    .header h1 {
+      font-size: clamp(1.8rem, 5vw, 2.6rem);
+      font-weight: 600;
+      letter-spacing: -0.04em;
+      background: linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.7) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .header p {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-top: 6px;
+      font-weight: 300;
+      letter-spacing: 0.02em;
+    }
+
+    /* ── CARDS ── */
+    .card {
+      background: var(--glass);
+      backdrop-filter: blur(var(--blur)) saturate(180%);
+      -webkit-backdrop-filter: blur(var(--blur)) saturate(180%);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-xl);
+      padding: 1.5rem;
+      margin-bottom: 1.25rem;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.3);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.3);
+    }
+
+    .card-title {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+    }
+
+    /* ── INPUTS ── */
+    .field { display: flex; flex-direction: column; gap: 7px; }
+    .field label {
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .field input {
+      height: 44px;
+      padding: 0 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(10px);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 14px;
+      outline: none;
+      transition: all 0.2s;
+    }
+    .field input::placeholder { color: var(--text-dim); }
+    .field input:focus {
+      border-color: rgba(255,255,255,0.5);
+      background: rgba(255,255,255,0.15);
+      box-shadow: 0 0 0 3px rgba(255,255,255,0.1);
+    }
+    input[type="time"] {
+      height: 44px;
+      padding: 0 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(10px);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 14px;
+      outline: none;
+      transition: all 0.2s;
+      width: 100%;
+      color-scheme: dark;
+    }
+    input[type="time"]:focus {
+      border-color: rgba(255,255,255,0.5);
+      background: rgba(255,255,255,0.15);
+    }
+
+    /* ── CONFIG ROW ── */
+    .config-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+    @media(max-width:520px){ .config-row { grid-template-columns: 1fr; } }
+
+    /* ── STATUS ── */
+    .status-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(255,255,255,0.12);
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .status-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.2);
+      flex-shrink: 0;
+      transition: all 0.3s;
+    }
+    .status-dot.ok { background: #4eff9e; box-shadow: 0 0 8px #4eff9e; }
+    .status-dot.err { background: #ff6b6b; box-shadow: 0 0 8px #ff6b6b; }
+
+    /* ── BUTTONS ── */
+    .btn {
+      height: 44px;
+      padding: 0 20px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.25);
+      background: rgba(255,255,255,0.12);
+      backdrop-filter: blur(10px);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      white-space: nowrap;
+    }
+    .btn:hover {
+      background: rgba(255,255,255,0.2);
+      border-color: rgba(255,255,255,0.4);
+      transform: translateY(-1px);
+    }
+    .btn:active { transform: scale(0.97); }
+
+    .btn-primary {
+      background: rgba(255,255,255,0.92);
+      color: #1a1a3a;
+      border-color: transparent;
+      font-weight: 600;
+    }
+    .btn-primary:hover { background: #fff; }
+
+    .btn-icon {
+      width: 36px; height: 36px;
+      padding: 0;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.08);
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+    .btn-icon:hover { color: #ff6b6b; border-color: rgba(255,107,107,0.4); background: rgba(255,107,107,0.1); }
+
+    /* ── ADD FORM ── */
+    .add-row { display: grid; grid-template-columns: 1fr 130px; gap: 12px; margin-bottom: 14px; }
+    @media(max-width:480px){ .add-row { grid-template-columns: 1fr; } }
+
+    /* ── DAYS ── */
+    .days-label { font-size: 12px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px; }
+    .days-row { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 16px; }
+    .day-btn {
+      width: 40px; height: 40px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.07);
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .day-btn:hover { border-color: rgba(255,255,255,0.3); color: var(--text); }
+    .day-btn.active {
+      background: rgba(255,255,255,0.22);
+      border-color: rgba(255,255,255,0.5);
+      color: #fff;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), 0 2px 8px rgba(0,0,0,0.2);
+    }
+    .add-footer { display: flex; justify-content: flex-end; }
+
+    /* ── TASKS HEADER ── */
+    .tasks-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      padding: 0 4px;
+    }
+    .tasks-header-title { font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); }
+    .count-pill {
+      font-size: 12px;
+      font-weight: 500;
+      padding: 4px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: var(--text-muted);
+    }
+
+    /* ── TASK ITEMS ── */
+    .task-list { display: flex; flex-direction: column; gap: 10px; }
+    .task-item {
+      background: var(--glass);
+      backdrop-filter: blur(var(--blur)) saturate(180%);
+      -webkit-backdrop-filter: blur(var(--blur)) saturate(180%);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      padding: 1rem 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.25);
+      transition: all 0.2s;
+      animation: slideUp 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(12px) scale(0.97); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .task-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.3);
+    }
+    .task-time-col { text-align: center; min-width: 58px; }
+    .task-time {
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: -0.03em;
+      background: linear-gradient(135deg, #fff, rgba(255,255,255,0.7));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1;
+    }
+    .task-info { flex: 1; }
+    .task-name { font-size: 15px; font-weight: 500; color: var(--text); margin-bottom: 5px; }
+    .task-days-row { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 4px; }
+    .day-tag {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 6px;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: rgba(255,255,255,0.7);
+      letter-spacing: 0.04em;
+    }
+    .task-next { font-size: 11px; color: var(--text-dim); }
+
+    /* ── EMPTY ── */
+    .empty {
+      text-align: center;
+      padding: 3.5rem 1rem;
+      color: var(--text-dim);
+    }
+    .empty-emoji { font-size: 40px; margin-bottom: 12px; opacity: 0.5; }
+    .empty p { font-size: 14px; line-height: 1.6; }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: rgba(255,255,255,0.18);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 999px;
+      padding: 12px 24px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+      pointer-events: none;
+      z-index: 999;
+      white-space: nowrap;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .toast.ok { border-color: rgba(78,255,158,0.5); }
+    .toast.err { border-color: rgba(255,107,107,0.5); }
+
+    /* ── LOADING ── */
+    .loading {
+      text-align: center;
+      padding: 2rem;
+      color: var(--text-dim);
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg">
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="orb orb3"></div>
+  <div class="orb orb4"></div>
+</div>
+
+<div class="app">
+
+  <header class="header">
+    <div class="header-icon">🔔</div>
+    <h1>Mi Agenda</h1>
+    <p>Recordatorios automáticos via Telegram · 24/7</p>
+  </header>
+
+  <!-- CONFIG -->
+  <div class="card">
+    <div class="card-title">Configuración Telegram</div>
+    <div class="config-row">
+      <div class="field">
+        <label>Bot Token</label>
+        <input type="password" id="botToken" placeholder="123456:ABC...">
+      </div>
+      <div class="field">
+        <label>Chat ID</label>
+        <input type="text" id="chatId" placeholder="987654321">
+      </div>
+    </div>
+    <div style="display:flex; justify-content:flex-end; margin-bottom:14px;">
+      <button class="btn btn-primary" onclick="saveConfig()">Guardar y probar →</button>
+    </div>
+    <div class="status-bar">
+      <div class="status-dot" id="statusDot"></div>
+      <span id="statusText">Cargando...</span>
+    </div>
+  </div>
+
+  <!-- ADD -->
+  <div class="card">
+    <div class="card-title">Nuevo recordatorio</div>
+    <div class="add-row">
+      <div class="field">
+        <label>¿Qué tenés que hacer?</label>
+        <input type="text" id="newTask" placeholder="Tomar agua, hacer ejercicio...">
+      </div>
+      <div class="field">
+        <label>Hora</label>
+        <input type="time" id="newTime" value="08:00">
+      </div>
+    </div>
+    <div class="days-label">Días de la semana</div>
+    <div class="days-row" id="daysGrid">
+      <button class="day-btn active" data-day="1">Lu</button>
+      <button class="day-btn active" data-day="2">Ma</button>
+      <button class="day-btn active" data-day="3">Mi</button>
+      <button class="day-btn active" data-day="4">Ju</button>
+      <button class="day-btn active" data-day="5">Vi</button>
+      <button class="day-btn" data-day="6">Sa</button>
+      <button class="day-btn" data-day="0">Do</button>
+    </div>
+    <div class="add-footer">
+      <button class="btn btn-primary" onclick="addTask()">+ Agregar</button>
+    </div>
+  </div>
+
+  <!-- TASKS -->
+  <div class="tasks-header">
+    <span class="tasks-header-title">Recordatorios activos</span>
+    <span class="count-pill" id="countPill">0</span>
+  </div>
+  <div class="task-list" id="taskList">
+    <div class="loading">Cargando recordatorios...</div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const DAYS_S = ['Do','Lu','Ma','Mi','Ju','Vi','Sa'];
+  const DAYS_F = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+
+  document.getElementById('daysGrid').addEventListener('click', e => {
+    const b = e.target.closest('.day-btn');
+    if (b) b.classList.toggle('active');
+  });
+
+  function getSelectedDays() {
+    return [...document.querySelectorAll('#daysGrid .day-btn.active')].map(b => parseInt(b.dataset.day));
+  }
+
+  function nextOcc(time, days) {
+    const now = new Date();
+    const [h, m] = time.split(':').map(Number);
+    for (let i = 0; i <= 7; i++) {
+      const d = new Date(now);
+      d.setDate(d.getDate() + i);
+      d.setHours(h, m, 0, 0);
+      if (d > now && days.includes(d.getDay())) return d;
+    }
+    return null;
+  }
+
+  function formatNext(task) {
+    const d = nextOcc(task.time, task.days);
+    if (!d) return 'sin próxima ocurrencia';
+    const diff = d - new Date();
+    const mins = Math.floor(diff / 60000);
+    const hours = Math.floor(mins / 60);
+    const days = Math.floor(hours / 24);
+    if (days >= 1) return `próx. ${DAYS_F[d.getDay()]} · ${task.time}`;
+    if (hours >= 1) return `en ${hours}h ${mins % 60}m`;
+    if (mins > 0) return `en ${mins} minutos`;
+    return 'ahora mismo';
+  }
+
+  function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  function renderTasks(tasks) {
+    const list = document.getElementById('taskList');
+    const pill = document.getElementById('countPill');
+    pill.textContent = tasks.length;
+    if (!tasks.length) {
+      list.innerHTML = `<div class="empty"><div class="empty-emoji">✨</div><p>Sin recordatorios todavía.<br>Agregá uno arriba.</p></div>`;
+      return;
+    }
+    const sorted = [...tasks].sort((a,b) => a.time.localeCompare(b.time));
+    list.innerHTML = sorted.map(t => `
+      <div class="task-item">
+        <div class="task-time-col">
+          <div class="task-time">${t.time}</div>
+        </div>
+        <div class="task-info">
+          <div class="task-name">${esc(t.name)}</div>
+          <div class="task-days-row">${t.days.sort().map(d=>`<span class="day-tag">${DAYS_S[d]}</span>`).join('')}</div>
+          <div class="task-next">${formatNext(t)}</div>
+        </div>
+        <button class="btn-icon" onclick="deleteTask(${t.id})" aria-label="Eliminar">✕</button>
+      </div>`).join('');
+  }
+
+  async function loadAll() {
+    try {
+      const res = await fetch('/api/tasks');
+      const data = await res.json();
+      const dot = document.getElementById('statusDot');
+      const txt = document.getElementById('statusText');
+      if (data.config.hasToken) {
+        dot.className = 'status-dot ok';
+        txt.textContent = `Configurado · Chat ID: ${data.config.chatId}`;
+      } else {
+        dot.className = 'status-dot';
+        txt.textContent = 'Ingresá tu Token y Chat ID para comenzar';
+      }
+      renderTasks(data.tasks);
+    } catch(e) {
+      document.getElementById('statusText').textContent = 'Error al conectar con el servidor';
+    }
+  }
+
+  async function saveConfig() {
+    const token  = document.getElementById('botToken').value.trim();
+    const chatId = document.getElementById('chatId').value.trim();
+    if (!token || !chatId) { showToast('Ingresá Token y Chat ID', 'err'); return; }
+    const dot = document.getElementById('statusDot');
+    const txt = document.getElementById('statusText');
+    txt.textContent = 'Probando conexión...';
+    dot.className = 'status-dot';
+    const res  = await fetch('/api/config', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({token, chatId}) });
+    const data = await res.json();
+    if (data.ok) {
+      dot.className = 'status-dot ok';
+      txt.textContent = `Configurado · Chat ID: ${chatId}`;
+      showToast('¡Guardado! Revisá tu Telegram ✓', 'ok');
+      document.getElementById('botToken').value = '';
+      loadAll();
+    } else {
+      dot.className = 'status-dot err';
+      txt.textContent = 'Token o Chat ID incorrecto';
+      showToast('Error de conexión', 'err');
+    }
+  }
+
+  async function addTask() {
+    const name = document.getElementById('newTask').value.trim();
+    const time = document.getElementById('newTime').value;
+    const days = getSelectedDays();
+    if (!name) { showToast('Escribí una tarea', 'err'); return; }
+    if (!time) { showToast('Elegí una hora', 'err'); return; }
+    if (!days.length) { showToast('Elegí al menos un día', 'err'); return; }
+    const res  = await fetch('/api/tasks', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({name,time,days}) });
+    const data = await res.json();
+    if (data.ok) {
+      document.getElementById('newTask').value = '';
+      showToast('Recordatorio guardado ✓', 'ok');
+      loadAll();
+    }
+  }
+
+  async function deleteTask(id) {
+    await fetch(`/api/tasks/${id}`, { method:'DELETE' });
+    showToast('Eliminado', '');
+    loadAll();
+  }
+
+  let tt;
+  function showToast(msg, type) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast show' + (type ? ' '+type : '');
+    clearTimeout(tt);
+    tt = setTimeout(() => t.className = 'toast', 3000);
+  }
+
+  loadAll();
+  setInterval(loadAll, 60000);
+</script>
+</body>
+</html>

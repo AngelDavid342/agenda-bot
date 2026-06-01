@@ -1,0 +1,17 @@
+{
+  "name": "agenda-telegram-bot",
+  "version": "2.0.0",
+  "description": "Agenda de recordatorios con Telegram",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "node-cron": "^3.0.3",
+    "pg": "^8.11.3"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
